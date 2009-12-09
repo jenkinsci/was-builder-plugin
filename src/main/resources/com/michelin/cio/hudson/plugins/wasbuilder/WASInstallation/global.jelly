@@ -1,0 +1,101 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:section title="IBM WebSphere Application Server 6.x/7.x">
+
+        <!-- WAS installations -->
+        <f:entry title="${%WAS installations}" description="${%List of WAS installations on this system}">
+            <f:repeatable name="wasinstall" var="instance" items="${descriptor.installations}" add="${%Add a WAS installation}">
+                <table width="100%">
+                    <f:entry field="name" title="${%Name}">
+                        <f:textbox/>
+                    </f:entry>
+                    <f:entry field="home" title="${%Installation directory}">
+                        <f:textbox/>
+                    </f:entry>
+                    <f:entry>
+                        <div align="right">
+                            <input type="button" value="${%Delete}" class="repeatable-delete"/>
+                        </div>
+                    </f:entry>
+                </table>
+            </f:repeatable>
+        </f:entry>
+
+        <!-- WAS servers -->
+        <f:entry title="${%WAS servers}" description="${%List of WAS servers}">
+            <!-- Is there at least one available WAS installation? -->
+            <j:if test="${!empty(descriptor.installations)}">
+                <f:repeatable name="wasserver" var="instance" items="${descriptor.servers}" add="${%Add a WAS server}">
+                    <table width="100%">
+                        <f:entry field="name" title="${%Name}">
+                            <f:textbox/>
+                        </f:entry>
+                        <f:entry field="wasInstallationName" title="${%WAS installation}">
+                            <select name="wasInstallationName" class="setting-input" field="">
+                                <j:forEach var="wasInstallation" items="${descriptor.installations}">
+                                    <f:option selected="${wasInstallation.name==instance.wasInstallation.name}" value="${wasInstallation.name}">
+                                        ${wasInstallation.name}
+                                    </f:option>
+                                </j:forEach>
+                            </select>
+                        </f:entry>
+                        <f:entry field="conntype" title="${%Connection type}">
+                            <select name="conntype" class="setting-input">
+                                <j:forEach var="conntype" items="${descriptor.conntypes}">
+                                    <f:option selected="${conntype==instance.conntype}" value="${conntype}">
+                                        ${conntype}
+                                    </f:option>
+                                </j:forEach>
+                            </select>
+                        </f:entry>
+                        <f:entry field="host" title="${%Host}">
+                            <f:textbox/>
+                        </f:entry>
+                        <f:entry field="port" title="${%Port}">
+                            <f:textbox/>
+                        </f:entry>
+                        <f:entry field="user" title="${%User}">
+                            <f:textbox/>
+                        </f:entry>
+                        <f:entry field="password" title="${%Password}">
+                            <f:password/>
+                        </f:entry>
+                        <f:entry>
+                            <div align="right">
+                               <input type="button" value="${%Delete}" class="repeatable-delete"/>
+                            </div>
+                        </f:entry>
+                    </table>
+                </f:repeatable>
+            </j:if>
+
+            <!-- No WAS installation is available -->
+            <j:if test="${empty(descriptor.installations)}">
+                ${%A least one WAS installation must be defined before creating a WAS server}
+            </j:if>
+        </f:entry>
+    </f:section>
+</j:jelly>

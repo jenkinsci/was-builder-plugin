@@ -1,0 +1,128 @@
+<!--
+  - The MIT License
+  -
+  - Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+  -
+  - Permission is hereby granted, free of charge, to any person obtaining a copy
+  - of this software and associated documentation files (the "Software"), to deal
+  - in the Software without restriction, including without limitation the rights
+  - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  - copies of the Software, and to permit persons to whom the Software is
+  - furnished to do so, subject to the following conditions:
+  -
+  - The above copyright notice and this permission notice shall be included in
+  - all copies or substantial portions of the Software.
+  -
+  - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  - THE SOFTWARE.
+  -->
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <j:if test="${!empty(descriptor.wasServers)}">
+        <f:entry title="${%WAS server}" field="wasServerName">
+            <select name="wasbuildstep.wasServerName" class="setting-input" field="">
+                <j:forEach var="wasServer" items="${descriptor.wasServers}">
+                    <f:option
+                        selected="${wasServer.name == instance.wasServer.name}"
+                        value="${wasServer.name}">
+                        ${wasServer.name}
+                    </f:option>
+                </j:forEach>
+            </select>
+        </f:entry>
+    </j:if>
+    <f:entry field="language" title="${%Language}">
+        <select name="wasbuildstep.language" class="setting-input" field="">
+            <j:forEach var="language" items="${descriptor.languages}">
+                <f:option selected="${language == instance.language}" value="${language}">
+                    ${language}
+                </f:option>
+            </j:forEach>
+        </select>
+    </f:entry>
+    <!--
+      - The following can't be used: Cf. issue HUDSON-5028; Instead we use two
+      - plain entries (commands and scriptFile).
+      -->
+    <!--f:block>
+        <f:radioBlock name="commandsOrScriptFile" value="commands" title="${%Run a set of commands}" checked="${!empty instance.commands}">
+            <f:entry title="${%Commands}" field="commands">
+                <f:expandableTextbox name="wasbuildstep.commands" value="${instance.commands}"/>
+            </f:entry>
+        </f:radioBlock>
+        <f:radioBlock name="commandsOrScriptFile" value="scriptFile" title="${%Run a script file}" checked="${!empty instance.scriptFile}">
+            <f:entry title="${%Script file}" field="scriptFile">
+                <f:textbox name="wasbuildstep.scriptFile" value="${instance.scriptFile}"/>
+            </f:entry>
+        </f:radioBlock>
+    </f:block-->
+    <f:entry title="${%Commands}" field="commands">
+        <f:expandableTextbox
+            name="wasbuildstep.commands"
+            value="${instance.commands}"/>
+    </f:entry>
+    <f:entry title="${%Script file}" field="scriptFile" description="${%Path relative to the workspace of the project}">
+        <f:textbox
+            name="wasbuildstep.scriptFile"
+            value="${instance.scriptFile}"/>
+    </f:entry>
+    <f:entry title="${%Parameters}" field="scriptParameters">
+        <f:expandableTextbox
+            name="wasbuildstep.scriptParameters"
+            value="${instance.scriptParameters}"/>
+    </f:entry>
+    <f:entry
+        title="${%Profile script files}"
+        field="profileScriptFiles"
+        description="${%Path relative to the workspace of the project}">
+        <f:expandableTextbox
+            name="wasbuildstep.profileScriptFiles"
+            value="${instance.profileScriptFiles}"/>
+    </f:entry>
+    <f:entry
+        title="${%Properties files}"
+        field="propertiesFiles"
+        description="${%Paths relative to the workspace of the project}">
+        <f:expandableTextbox
+            name="wasbuildstep.propertiesFiles"
+            value="${instance.propertiesFiles}"/>
+    </f:entry>
+    <f:advanced>
+        <f:entry title="${%Java options}" field="javaOptions">
+            <f:expandableTextbox
+                name="wasbuildstep.javaOptions"
+                value="${instance.javaOptions}"/>
+        </f:entry>
+        <f:entry title="${%Additional classpath}" field="additionalClasspath">
+            <f:expandableTextbox
+                name="wasbuildstep.additionalClasspath"
+                value="${instance.additionalClasspath}"/>
+        </f:entry>
+        <f:entry title="${%Job ID}" field="jobId">
+            <f:textbox name="wasbuildstep.jobId" value="${instance.jobId}"/>
+        </f:entry>
+        <f:entry
+            title="${%Trace file}"
+            field="traceFile"
+            description="${%Path relative to the workspace of the project}">
+            <f:textbox name="wasbuildstep.traceFile" value="${instance.traceFile}"/>
+        </f:entry>
+        <f:entry title="" field="appendTrace">
+            <f:checkbox
+                id="wasbuildstep.appendTrace"
+                name="wasbuildstep.appendTrace"
+                checked="${instance.appendTrace}"/>
+            <label for="wasbuildstep.appendTrace">
+                ${%Append trace}
+            </label>
+        </f:entry>
+        <f:entry title="${%Run if}" field="runIf">
+            <f:textbox name="wasbuildstep.runIf" value="${instance.runIf}"/>
+        </f:entry>
+    </f:advanced>
+</j:jelly>
