@@ -201,16 +201,32 @@ public class WASBuildStep extends Builder {
         // --- runIf ---
 
         if(getRunIf() != null && getRunIf().length() > 0) {
+            listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("SearchingForBuildOrEnvVar", getRunIf()));
+            
             // 1st check: is the var defined at the build level?
             String runIfVar = varResolver.resolve(getRunIf());
-            if(runIfVar != null && runIfVar.trim().length() > 0) {
-                listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBuildVar", getRunIf()));
-                return true;
+            if(runIfVar != null) {
+                // does the build var has a value?
+                if(runIfVar.trim().length() > 0) {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfBuildVar", getRunIf()));
+                }
+                // the build var exists and has no value
+                else {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBuildVar", getRunIf()));
+                    return true;
+                }
             }
-            // 2nd check: is the var defined at the environment level?
-            if(!(runIfVar == null || runIfVar.trim().length() == 0) && env.containsKey(getRunIf())) {
-                listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfEnvVar", getRunIf()));
-                return true;
+            // 3rd check: is the var defined at the environment level?
+            else {
+                listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildVarNotFound", getRunIf()));
+
+                if(env.containsKey(getRunIf())) {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfEnvVar", getRunIf()));
+                }
+                else {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfEnvVar", getRunIf()));
+                    return true;
+                }
             }
         }
 
