@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
 import hudson.tasks.BuildStepDescriptor;
@@ -53,7 +54,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * to get a full description of wsadmin options.</p>
  *
  * @author Romain Seguy
- * @version 1.0
+ * @version 1.0.1
  */
 public class WASBuildStep extends Builder {
 
@@ -236,6 +237,9 @@ public class WASBuildStep extends Builder {
         if(wasServer != null) {
             WASInstallation wasInstallation = wasServer.getWasInstallation();
             if(wasInstallation != null) {
+                wasInstallation = wasInstallation.forNode(Computer.currentComputer().getNode(), listener);
+                wasInstallation = wasInstallation.forEnvironment(env);
+
                 String wsAdminExecutable = wasInstallation.getWsadminExecutable(launcher);
                 if(wsAdminExecutable != null) {
                     args.add(wsAdminExecutable);
@@ -255,7 +259,7 @@ public class WASBuildStep extends Builder {
             return false;
         }
 
-        // -- server parameters (defined in the corresponding WASServer) --
+        // --- server parameters (defined in the corresponding WASServer) ---
 
         args.add("-conntype", wasServer.getConntype());
         args.add("-host", wasServer.getHost());
