@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2009-2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>Please refer to {@link http://publib.boulder.ibm.com/infocenter/wasinfo/v7r0/index.jsp?topic=/com.ibm.websphere.nd.doc/info/ae/ae/rxml_commandline.html}
  * to get a full description of wsadmin options.</p>
  *
- * @author Romain Seguy
- * @version 1.0.1
+ * @author Romain Seguy (http://openromain.blogspot.com)
  */
 public class WASBuildStep extends Builder {
 

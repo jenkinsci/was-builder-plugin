@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2009-2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,14 +53,14 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Corresponds to an IBM WebSphere Application Server installation (currently,
- * it has been tested with WAS 6.0 and WAS 7.0)
+ * it has been tested with WAS 6.0 and WAS 7.0) or an Administration Thin Client
+ * (cf. {@link http://publib.boulder.ibm.com/infocenter/wasinfo/v7r0/topic/com.ibm.websphere.nd.multiplatform.doc/info/ae/ae/txml_adminclient.html).
  *
  * <p>To use a {@link WASBuildStep} build step, it is mandatory to define an
  * installation: No default installations can be assumed as we necessarily need
  * {@code wsadmin.bat}/{@code wsadmin.sh}.</p>
  *
- * @author Romain Seguy
- * @version 1.0
+ * @author Romain Seguy (http://openromain.blogspot.com)
  */
 public class WASInstallation extends ToolInstallation implements NodeSpecific<WASInstallation>, EnvironmentSpecific<WASInstallation> {
 
@@ -93,10 +93,17 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
     public String getWsadminExecutable(Launcher launcher) throws IOException, InterruptedException {
         return launcher.getChannel().call(new Callable<String,IOException>() {
             public String call() throws IOException {
-                // is wsadmin.bat/wsadmin.sh there?
+                // 1st try: do we work with a plain WAS installation?
                 File wsadminFile = getWsadminFile("bin");
                 if(wsadminFile.exists()) {
                     return wsadminFile.getPath();
+                }
+                else {
+                    // 2nd try: do we work with an administration thin client?
+                    wsadminFile = getWsadminFile(null);
+                    if(wsadminFile.exists()) {
+                        return wsadminFile.getPath();
+                    }
                 }
                 return null;
             }
@@ -109,11 +116,18 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
     private File getWsadminFile(String binFolder) {
         String wsadminFileName = WSADMIN_SH;
 
+        if(!StringUtils.isEmpty(binFolder)) {
+            binFolder = binFolder + "/";
+        }
+        else {
+            binFolder = "";
+        }
+
         if(Hudson.isWindows()) {
             wsadminFileName = WSADMIN_BAT;
         }
 
-        return new File(Util.replaceMacro(getHome(), EnvVars.masterEnvVars), binFolder + "/" + wsadminFileName);
+        return new File(Util.replaceMacro(getHome(), EnvVars.masterEnvVars), binFolder + wsadminFileName);
     }
 
     /**
@@ -197,26 +211,38 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
 
             // let's check for the wsadmin file existence
             if(Hudson.isWindows()) {
-                boolean noWsadminBat = false;
+                boolean noWsadminBat = false;           // plain WAS installation
+                boolean noWsadminThinClientBat = false; // WAS administration thin client
 
                 File wsadminFile = new File(value, "bin\\" + WSADMIN_BAT);
                 if(!wsadminFile.exists()) {
                     noWsadminBat = true;
+
+                    wsadminFile = new File(value, WSADMIN_BAT);
+                    if(!wsadminFile.exists()) {
+                        noWsadminThinClientBat = true;
+                    }
                 }
 
-                if(noWsadminBat) {
+                if(noWsadminThinClientBat || noWsadminThinClientBat && noWsadminBat) {
                     return FormValidation.error(ResourceBundleHolder.get(WASInstallation.class).format("NotAWASInstallationFolder", value));
                 }
             }
             else {
-                boolean noWsadminSh = false;
+                boolean noWsadminSh = false;           // plain WAS installation
+                boolean noWsadminThinClientSh = false; // WAS administration thin client
 
                 File wsadminFile = new File(value, "bin/" + WSADMIN_SH);
                 if(!wsadminFile.exists()) {
                     noWsadminSh = true;
+
+                    wsadminFile = new File(value, WSADMIN_SH);
+                    if(!wsadminFile.exists()) {
+                        noWsadminThinClientSh = true;
+                    }
                 }
 
-                if(noWsadminSh) {
+                if(noWsadminThinClientSh || noWsadminThinClientSh && noWsadminSh) {
                     return FormValidation.error(ResourceBundleHolder.get(WASInstallation.class).format("NotAWASInstallationFolder", value));
                 }
             }

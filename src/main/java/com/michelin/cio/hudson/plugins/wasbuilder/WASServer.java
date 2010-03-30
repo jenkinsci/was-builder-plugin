@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2009-2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * <p>Connection settings are set at the {@link WASServer} level, for example to
  * ensure the user can't directly access the password.</p>
  *
- * @author Romain Seguy
- * @version 1.0
+ * @author Romain Seguy (http://openromain.blogspot.com)
  */
 public class WASServer {
 
