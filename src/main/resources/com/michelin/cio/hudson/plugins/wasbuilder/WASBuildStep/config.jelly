@@ -93,6 +93,16 @@
             value="${instance.propertiesFiles}"/>
     </f:entry>
     <f:advanced>
+        <f:entry title="${%User}" field="user">
+            <f:textbox
+                name="wasbuildstep.user"
+                value="${instance.user}"/>
+        </f:entry>
+        <f:entry title="${%Password}" field="password">
+            <f:password
+                name="wasbuildstep.password"
+                value="${instance.password}"/>
+        </f:entry>
         <f:entry title="${%Java options}" field="javaOptions">
             <f:expandableTextbox
                 name="wasbuildstep.javaOptions"

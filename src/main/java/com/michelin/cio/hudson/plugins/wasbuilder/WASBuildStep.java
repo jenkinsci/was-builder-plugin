@@ -39,9 +39,11 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -73,6 +75,8 @@ public class WASBuildStep extends Builder {
     private final String jobId;
     /** Corresponds to the -lang option of wsadmin */
     private final String language;
+    /** Allows overriding the password defined at the server level */
+    private Secret password;
     /** Corresponds to the -profile option of wsadmin. */
     private final String profileScriptFiles;
     /** Corresponds to the -p option of wsadmin. */
@@ -93,11 +97,13 @@ public class WASBuildStep extends Builder {
     private final String scriptParameters;
     /** Corresponds to the -tracefile option of wsadmin (not available for WAS 6.0). */
     private final String traceFile;
-    /* Identitifies the {@link WASServer} to be used. */
+    /** Allows overriding the user defined at the server level */
+    private final String user;
+    /** Identitifies the {@link WASServer} to be used. */
     private final String wasServerName;
 
     @DataBoundConstructor
-    public WASBuildStep(String additionalClasspath, boolean appendTrace, String commands, String javaOptions, String jobId, String language, String profileScriptFiles, String propertiesFiles, String runIf, String scriptFile, String scriptParameters, String traceFile, String wasServerName) {
+    public WASBuildStep(String additionalClasspath, boolean appendTrace, String commands, String javaOptions, String jobId, String language, String profileScriptFiles, String propertiesFiles, String runIf, String scriptFile, String scriptParameters, String traceFile, String wasServerName, String user, String password) {
         this.additionalClasspath = additionalClasspath.trim();
         this.appendTrace = appendTrace;
         this.commands = commands.trim();
@@ -118,6 +124,8 @@ public class WASBuildStep extends Builder {
         this.scriptParameters = scriptParameters.trim();
         this.traceFile = traceFile.trim();
         this.wasServerName = wasServerName;
+        this.user = user.trim();
+        this.password = Secret.fromString(password);
     }
 
     public String getAdditionalClasspath() {
@@ -149,6 +157,10 @@ public class WASBuildStep extends Builder {
         return language;
     }
 
+    public String getPassword() {
+        return password.toString();
+    }
+
     public String getProfileScriptFiles() {
         return profileScriptFiles;
     }
@@ -171,6 +183,10 @@ public class WASBuildStep extends Builder {
 
     public String getTraceFile() {
         return traceFile;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     /**
@@ -263,12 +279,27 @@ public class WASBuildStep extends Builder {
         args.add("-conntype", wasServer.getConntype());
         args.add("-host", wasServer.getHost());
         args.add("-port", Integer.toString(wasServer.getPort()));
-        if(wasServer.getUser() != null && wasServer.getUser().length() > 0) {
-            args.add("-user", wasServer.getUser());
+
+        // --- user/password (defined in the corresponding WASServer but can be overriden) ---
+
+        String user = null;
+        String password = null;
+        if(!StringUtils.isEmpty(getUser())) {
+            user = Util.replaceMacro(env.expand(getUser()), varResolver);
+            password = Util.replaceMacro(env.expand(getPassword()), varResolver);
+            listener.getLogger().println("Using user " + user + " defined at the build step level");
         }
-        if(wasServer.getPassword() != null && wasServer.getPassword().length() > 0) {
-            args.add("-password");
-            args.addMasked(wasServer.getPassword());
+        else if(!StringUtils.isEmpty(wasServer.getUser())) {
+            user = wasServer.getUser();
+            password = wasServer.getPassword();
+            listener.getLogger().println("Using user " + user + " defined at the server level");
+        }
+        if(!StringUtils.isEmpty(user)) {
+            args.add("-user", wasServer.getUser());
+            if(!StringUtils.isEmpty(password)) {
+                args.add("-password");
+                args.addMasked(wasServer.getPassword());
+            }
         }
 
         // --- lang ---
