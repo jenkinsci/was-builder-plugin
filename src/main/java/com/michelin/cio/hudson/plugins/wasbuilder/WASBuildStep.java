@@ -158,7 +158,7 @@ public class WASBuildStep extends Builder {
     }
 
     public String getPassword() {
-        return password.toString();
+        return password != null ? password.toString() : null;
     }
 
     public String getProfileScriptFiles() {
