@@ -13,7 +13,7 @@
   <packaging>hpi</packaging>
   <name>WAS Builder Plugin</name>
   <url>http://wiki.hudson-ci.org/display/HUDSON/WAS+Builder+Plugin</url>
-  <version>1.4</version>
+  <version>1.5-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,10 +41,4 @@
         <version>0.4</version>
     </dependency>
   </dependencies-->
-
-  <scm>
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/was-builder-1.4</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/was-builder-1.4</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/was-builder/tags/was-builder-1.4</url>
-  </scm>
 </project>
