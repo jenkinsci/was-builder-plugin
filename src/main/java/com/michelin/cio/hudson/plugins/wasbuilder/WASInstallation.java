@@ -39,10 +39,16 @@ import hudson.tools.ToolInstallation;
 import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -142,6 +148,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
     public static class DescriptorImpl extends ToolDescriptor<WASInstallation> {
 
         private WASServer[] servers;
+        private boolean createLocks = true;
 
         public DescriptorImpl() {
             // let's avoid a NullPointerException in getInstallations()
@@ -160,6 +167,14 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
          */
         public String[] getConntypes() {
             return WASServer.CONNTYPES;
+        }
+
+        public boolean getCreateLocks() {
+            return createLocks;
+        }
+
+        public void setCreateLocks(boolean createLocks) {
+            this.createLocks = createLocks;
         }
 
         @Override
@@ -191,10 +206,92 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
                     req.bindJSONToList(
                             WASServer.class,
                             formData.get("wasserver")).toArray(new WASServer[0]));
+            setCreateLocks(formData.getBoolean("createLocks"));
 
             save();
 
+            if(getCreateLocks()) {
+                createLocks();
+            }
+
             return true;
+        }
+
+        /**
+         * Creates, for each defined WAS server, a corresponding lock (from the
+         * locks-and-latches plug-in).
+         *
+         * <p>All the processing here is done using the reflection API: This is
+         * purposely done to avoid having a dependency between this plug-in and
+         * the locks-and-latches one which would make it mandatory to install it.
+         * </p>
+         */
+        private void createLocks() {
+            // is the locks-and-latches plugin installed?
+            if(Hudson.getInstance().getPlugin("locks-and-latches") != null) {
+                try {
+                    ClassLoader hudsonClassLoader = Hudson.getInstance().getPluginManager().uberClassLoader;
+
+                    // LockWrapper.DescriptorImpl lockWrapperDescriptor = LockWrapper.getDescriptor();
+                    Class lockWrapperClass = hudsonClassLoader.loadClass("hudson.plugins.locksandlatches.LockWrapper");
+                    Field lockWrapperDescriptorField = lockWrapperClass.getDeclaredField("DESCRIPTOR");
+                    Object lockWrapperDescriptor = lockWrapperDescriptorField.get(null);
+
+                    // String[] lockNames = lockWrapperDescriptor.getLockNames();
+                    Class descriptorImplClass = hudsonClassLoader.loadClass("hudson.plugins.locksandlatches.LockWrapper$DescriptorImpl");
+                    Method getLockNamesMethod = descriptorImplClass.getMethod("getLockNames");
+                    String[] lockNames = (String[]) getLockNamesMethod.invoke(lockWrapperDescriptor);
+
+                    // we ensure each server has a lock with the same name
+                    List<WASServer> createLockFor = new ArrayList<WASServer>();
+                    if(getServers() != null) {
+                        for(WASServer server: getServers()) {
+                            if(lockNames != null) {
+                                boolean found = false;
+                                for(String lockName: lockNames) {
+                                    if(lockName.equals(server.getName())) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if(!found) {
+                                    createLockFor.add(server);
+                                }
+                            }
+                            else {
+                                createLockFor.add(server);
+                            }
+                        }
+                    }
+
+                    // we create the new locks if required
+                    if(!createLockFor.isEmpty()) {
+                        // new LockWrapper.LockConfig(...)
+                        Class lockConfigClass = hudsonClassLoader.loadClass("hudson.plugins.locksandlatches.LockWrapper$LockConfig");
+                        Constructor lockConfigConstructor = lockConfigClass.getConstructor(String.class);
+
+                        List newLocks = new ArrayList();
+                        for(WASServer server: createLockFor) {
+                            // newLocks.add(new LockWrapper.LockConfig(server.getName()));
+                            newLocks.add(lockConfigConstructor.newInstance(server.getName()));
+                            LOGGER.info("The locks-and-latches plugin is installed: Adding new lock for WAS server " + server.getName());
+                        }
+
+                        // lockWrapperDescriptor.getLocks().addAll(newLocks);
+                        Method getLocksMethod = descriptorImplClass.getMethod("getLocks");
+                        ((List) getLocksMethod.invoke(lockWrapperDescriptor)).addAll(newLocks);
+
+                        // lockWrapperDescriptor.save();
+                        Method saveMethod = descriptorImplClass.getMethod("save");
+                        saveMethod.invoke(lockWrapperDescriptor);
+                    }
+                } catch (Exception e) {
+                    LOGGER.warning("Can't automatically add locks for WAS servers; The following exception occurred while reflecting the locks-and-latches plugin: " + e);
+                }
+            }
+            else {
+                LOGGER.warning("The locks-and-latches plugin is not installed: Can't automatically add locks for each WAS server.");
+            }
         }
 
         /**
@@ -340,5 +437,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
         }
 
     }
+
+    private final static Logger LOGGER = Logger.getLogger(WASInstallation.class.getName());
 
 }

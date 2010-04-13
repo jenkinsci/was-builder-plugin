@@ -97,5 +97,13 @@
                 ${%A least one WAS installation must be defined before creating a WAS server}
             </j:if>
         </f:entry>
+
+        <f:entry field="createLocks">
+            <f:checkbox
+                name="createLocks"
+                checked="${descriptor.createLocks}"
+                default="true"/>
+            <label class="attach-previous">${%Create a lock for each WAS server}</label>
+        </f:entry>
     </f:section>
 </j:jelly>

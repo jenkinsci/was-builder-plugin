@@ -452,7 +452,8 @@ public class WASBuildStep extends Builder {
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             // The code below is commented until issue HUDSON-5028 (which is
-            // about the use of radioBlocks in a BuildStep) is resolved.
+            // about the use of radioBlocks in a BuildStep) is resolved and this
+            // plugin is moved to the corresponding version.
             //
             // we need to do a little JSON processing to handle radioBlocks
             // which generates (for example) the following JSON data:

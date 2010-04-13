@@ -27,4 +27,18 @@
       <timezone>+1</timezone>
     </developer>
   </developers>
+
+  <!--
+    - The lock-and-latches plug-in is used through reflection from the was-builder
+    - one rather than as a dependency: As this, the was-builder plugin-in won't
+    - fail starting if locks-and-latches is not there.
+    - Cf. WASInstallation.DescriptorImpl.createLocks().
+    -->
+  <!--dependencies>
+    <dependency>
+      <groupId>org.jvnet.hudson.plugins</groupId>
+      <artifactId>locks-and-latches</artifactId>
+        <version>0.4</version>
+    </dependency>
+  </dependencies-->
 </project>
