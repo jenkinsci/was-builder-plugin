@@ -47,6 +47,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -147,7 +148,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
     @Extension
     public static class DescriptorImpl extends ToolDescriptor<WASInstallation> {
 
-        private WASServer[] servers;
+        private List<WASServer> servers;
         private boolean createLocks = true;
 
         public DescriptorImpl() {
@@ -184,7 +185,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
 
         public WASServer[] getServers() {
             if(servers != null) {
-                return servers.clone();
+                return servers.toArray(new WASServer[0]);
             }
 
             return null;
@@ -192,7 +193,28 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
 
         private void setServers(WASServer... servers) {
             if(servers != null) {
-                this.servers = servers.clone();
+                if(this.servers != null) {
+                    this.servers.clear();
+                }
+                else {
+                    this.servers = new ArrayList<WASServer>();
+                }
+
+                // only servers which have a name are added to the list, other
+                // ones are dropped
+                for(WASServer server: servers) {
+                    if(StringUtils.isNotEmpty(server.getName())) {
+                        this.servers.add(server);
+                    }
+                }
+
+                // we sort the servers list, otherwise it will become a pain to
+                // know what's already created and what has to be created
+                Collections.sort(this.servers, new Comparator<WASServer>() {
+                    public int compare(WASServer server1, WASServer server2) {
+                        return server1.getName().compareToIgnoreCase(server2.getName());
+                    }
+                });
             }
         }
 
