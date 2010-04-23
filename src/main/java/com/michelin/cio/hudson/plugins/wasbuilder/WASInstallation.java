@@ -74,17 +74,29 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
     public final static String WSADMIN_BAT = "wsadmin.bat";
     public final static String WSADMIN_SH = "wsadmin.sh";
 
+    /**
+     * Represents the wsadmin command to actually invoke (most of the time, this
+     * has to be something like $WAS_HOME/bin/wsadmin.sh).
+     */
+    private final String wsadminCommand;
+
     @DataBoundConstructor
-    public WASInstallation(String name, String home) {
+    public WASInstallation(String name, String home, String wsadminCommand) {
         super(name, removeTrailingBackslash(home), Collections.EMPTY_LIST);
+        if(StringUtils.isBlank(wsadminCommand)) {
+            this.wsadminCommand = "${WSADMIN}";
+        }
+        else {
+            this.wsadminCommand = wsadminCommand;
+        }
     }
 
     public WASInstallation forEnvironment(EnvVars env) {
-        return new WASInstallation(getName(), env.expand(getHome()));
+        return new WASInstallation(getName(), env.expand(getHome()), getWsadminCommand());
     }
 
     public WASInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
-        return new WASInstallation(getName(), translateFor(node, log));
+        return new WASInstallation(getName(), translateFor(node, log), getWsadminCommand());
     }
 
     public static WASInstallation getWasInstallationByName(String installationName) {
@@ -97,22 +109,34 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
         return null;
     }
 
+    public String getWsadminCommand() {
+        if(StringUtils.isBlank(wsadminCommand)) {
+            return "${WSADMIN}";
+        }
+        return wsadminCommand;
+    }
+
     public String getWsadminExecutable(Launcher launcher) throws IOException, InterruptedException {
         return launcher.getChannel().call(new Callable<String,IOException>() {
             public String call() throws IOException {
+                String wsadminFilePath = null;
                 // 1st try: do we work with a plain WAS installation?
                 File wsadminFile = getWsadminFile("bin");
                 if(wsadminFile.exists()) {
-                    return wsadminFile.getPath();
+                    wsadminFilePath = wsadminFile.getPath();
                 }
                 else {
                     // 2nd try: do we work with an administration thin client?
                     wsadminFile = getWsadminFile(null);
                     if(wsadminFile.exists()) {
-                        return wsadminFile.getPath();
+                        wsadminFilePath = wsadminFile.getPath();
+                    }
+                    else {
+                        return null;
                     }
                 }
-                return null;
+
+                return getWsadminCommand().replace("${WSADMIN}", wsadminFilePath);
             }
         });
     }

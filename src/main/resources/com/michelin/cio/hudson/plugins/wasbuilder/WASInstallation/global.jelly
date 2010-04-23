@@ -35,6 +35,11 @@
                     <f:entry field="home" title="${%Installation directory}">
                         <f:textbox/>
                     </f:entry>
+                    <f:advanced>
+                        <f:entry field="wsadminCommand" title="${%Wsadmin command}">
+                            <f:textbox/>
+                        </f:entry>
+                    </f:advanced>
                     <f:entry>
                         <div align="right">
                             <input type="button" value="${%Delete}" class="repeatable-delete"/>
@@ -94,7 +99,7 @@
 
             <!-- No WAS installation is available -->
             <j:if test="${empty(descriptor.installations)}">
-                ${%A least one WAS installation must be defined before creating a WAS server}
+                ${%At least one WAS installation must be defined before creating a WAS server}
             </j:if>
         </f:entry>
 

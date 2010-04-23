@@ -299,12 +299,12 @@ public class WASBuildStep extends Builder {
                 wasInstallation = wasInstallation.forNode(Computer.currentComputer().getNode(), listener);
                 wasInstallation = wasInstallation.forEnvironment(env);
 
-                String wsAdminExecutable = wasInstallation.getWsadminExecutable(launcher);
-                if(wsAdminExecutable != null) {
-                    args.add(wsAdminExecutable);
+                String wsadminExecutable = wasInstallation.getWsadminExecutable(launcher);
+                if(wsadminExecutable != null) {
+                    args.add(wsadminExecutable);
                 }
                 else {
-                    listener.fatalError(ResourceBundleHolder.get(WASBuildStep.class).format("NoWsAdminExecutable", wasInstallation.getName(), wasServer.getName()));
+                    listener.fatalError(ResourceBundleHolder.get(WASBuildStep.class).format("NoWsadminExecutable", wasInstallation.getName(), wasServer.getName()));
                     return false;
                 }
             }
