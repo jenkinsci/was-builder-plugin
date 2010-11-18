@@ -31,17 +31,13 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BooleanParameterDefinition;
 import hudson.model.BooleanParameterValue;
 import hudson.model.BuildListener;
-import hudson.model.ChoiceParameterDefinition;
 import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
@@ -90,7 +86,7 @@ public class WASBuildStep extends Builder {
     /** Corresponds to the -p option of wsadmin. */
     private final String propertiesFiles;
     /**
-     * If {@code runIf} contains a variable name and if this variable is set,
+     * If {@code dontPerformBuildStep} contains a variable name and if this variable is set,
      * then the build step is run. If the variable is not set, or if this
      * attribute is {@code null}, or if it is an empty string, then the build
      * step is not run.
@@ -224,70 +220,8 @@ public class WASBuildStep extends Builder {
 
         // --- runIf ---
 
-        if(StringUtils.isNotEmpty(getRunIf())) {
-            listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("SearchingForBooleanParamOrBuildVarOrEnvVar", getRunIf()));
-
-            // let's search for a BooleanParameterDefinition (actually, a
-            // BooleanParameterValue) which matches the runIf field
-            BooleanParameterValue booleanParamValue = null;
-            List<ParametersAction> actions = build.getActions(ParametersAction.class);
-            if(actions != null) {
-                for(ParametersAction action : actions) {
-                    List<ParameterValue> parameters = action.getParameters();
-                    if(parameters != null) {
-                        for(ParameterValue parameter : parameters) {
-                            if(parameter.getName().equals(getRunIf()) && parameter instanceof BooleanParameterValue) {
-                                booleanParamValue = (BooleanParameterValue) parameter;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(booleanParamValue != null) {
-                        break;
-                    }
-                }
-            }
-
-            // boolean parameters take precedence on other parameters types
-            if(booleanParamValue != null) {
-                listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BooleanParamFound", getRunIf()));
-                
-                if(booleanParamValue.value) {
-                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfBooleanParam", getRunIf()));
-                }
-                else {
-                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBooleanParam", getRunIf()));
-                    return true;
-                }
-            }
-            else {
-                // 1st check: is the var defined at the build level?
-                String runIfVar = varResolver.resolve(getRunIf());
-                if(runIfVar != null) {
-                    // does the build var has a value?
-                    if(runIfVar.trim().length() > 0) {
-                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfBuildVar", getRunIf()));
-                    }
-                    // the build var exists and has no value
-                    else {
-                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBuildVar", getRunIf()));
-                        return true;
-                    }
-                }
-                // 3rd check: is the var defined at the environment level?
-                else {
-                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildVarNotFound", getRunIf()));
-
-                    if(env.containsKey(getRunIf())) {
-                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfEnvVar", getRunIf()));
-                    }
-                    else {
-                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfEnvVar", getRunIf()));
-                        return true;
-                    }
-                }
-            }
+        if(dontPerformBuildStep(listener, build, varResolver, env)) {
+            return true;
         }
 
         // --- wsadmin.bat/wsadmin.sh ---
@@ -451,6 +385,67 @@ public class WASBuildStep extends Builder {
             listener.fatalError(ResourceBundleHolder.get(WASBuildStep.class).format("ExecutionFailed"));
             return false;
         }
+    }
+
+    /**
+     * Returns {@code true} if the build step must NOT be performed (based on
+     * the {@code runIf} attribute, {@code false} otherwise.
+     */
+    private boolean dontPerformBuildStep(BuildListener listener, AbstractBuild<?, ?> build, VariableResolver<String> varResolver, EnvVars env) {
+        // --- dontPerformBuildStep ---
+        if (StringUtils.isNotEmpty(getRunIf())) {
+            listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("SearchingForBooleanParamOrBuildVarOrEnvVar", getRunIf()));
+            // let's search for a BooleanParameterDefinition (actually, a
+            // BooleanParameterValue) which matches the dontPerformBuildStep field
+            BooleanParameterValue booleanParamValue = null;
+            List<ParametersAction> actions = build.getActions(ParametersAction.class);
+            if (actions != null) {
+                for (ParametersAction action : actions) {
+                    List<ParameterValue> parameters = action.getParameters();
+                    if (parameters != null) {
+                        for (ParameterValue parameter : parameters) {
+                            if (parameter.getName().equals(getRunIf()) && parameter instanceof BooleanParameterValue) {
+                                booleanParamValue = (BooleanParameterValue) parameter;
+                                break;
+                            }
+                        }
+                    }
+                    if (booleanParamValue != null) {
+                        break;
+                    }
+                }
+            }
+            if (booleanParamValue != null) {
+                listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BooleanParamFound", getRunIf()));
+                if (booleanParamValue.value) {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfBooleanParam", getRunIf()));
+                } else {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBooleanParam", getRunIf()));
+                    return true;
+                }
+            } else {
+                // 1st check: is the var defined at the build level?
+                String runIfVar = varResolver.resolve(getRunIf());
+                if (runIfVar != null) {
+                    // does the build var has a value?
+                    if (runIfVar.trim().length() > 0) {
+                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfBuildVar", getRunIf()));
+                    } else {
+                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfBuildVar", getRunIf()));
+                        return true;
+                    }
+                } else {
+                    listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildVarNotFound", getRunIf()));
+                    if (env.containsKey(getRunIf())) {
+                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepRunBecauseOfEnvVar", getRunIf()));
+                    } else {
+                        listener.getLogger().println(ResourceBundleHolder.get(WASBuildStep.class).format("BuildStepNotRunBecauseOfEnvVar", getRunIf()));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Extension
