@@ -2,17 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
+    <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.312</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.398</version>
   </parent>
 
-  <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>was-builder</artifactId>
   <packaging>hpi</packaging>
   <name>WAS Builder Plugin</name>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/WAS+Builder+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/WAS+Builder+Plugin</url>
   <version>1.6-SNAPSHOT</version>
 
   <properties>
