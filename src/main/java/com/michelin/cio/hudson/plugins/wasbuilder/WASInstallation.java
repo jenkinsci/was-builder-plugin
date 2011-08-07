@@ -26,6 +26,7 @@ package com.michelin.cio.hudson.plugins.wasbuilder;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.EnvironmentSpecific;
@@ -154,7 +155,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
             binFolder = "";
         }
 
-        if(Hudson.isWindows()) {
+        if(Functions.isWindows()) {
             wsadminFileName = WSADMIN_BAT;
         }
 
@@ -353,7 +354,7 @@ public class WASInstallation extends ToolInstallation implements NodeSpecific<WA
             }
 
             // let's check for the wsadmin file existence
-            if(Hudson.isWindows()) {
+            if(Functions.isWindows()) {
                 boolean noWsadminBat = false;           // plain WAS installation
                 boolean noWsadminThinClientBat = false; // WAS administration thin client
 

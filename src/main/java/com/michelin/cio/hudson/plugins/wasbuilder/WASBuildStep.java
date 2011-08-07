@@ -161,6 +161,7 @@ public class WASBuildStep extends Builder {
         return language;
     }
 
+    @SuppressWarnings("deprecation")
     public String getPassword() {
         return password != null ? password.toString() : null;
     }
@@ -292,7 +293,7 @@ public class WASBuildStep extends Builder {
             }
         }
         else if(getScriptFile() != null && getScriptFile().length() > 0) {
-            FilePath scriptFilePath = project.getWorkspace().child(Util.replaceMacro(env.expand(getScriptFile()), varResolver));
+            FilePath scriptFilePath = build.getWorkspace().child(Util.replaceMacro(env.expand(getScriptFile()), varResolver));
             if(scriptFilePath.exists()) {
                 args.add("-f");
                 args.add(scriptFilePath);
@@ -311,7 +312,7 @@ public class WASBuildStep extends Builder {
 
         if(getPropertiesFiles() != null && getPropertiesFiles().length() > 0) {
             for(String propertiesFile: Util.tokenize(Util.replaceMacro(env.expand(getPropertiesFiles()), varResolver))) {
-                FilePath propertiesFilePath = project.getWorkspace().child(propertiesFile);
+                FilePath propertiesFilePath = build.getWorkspace().child(propertiesFile);
                 if(propertiesFilePath.exists()) {
                     args.add("-p");
                     args.add(propertiesFilePath);
@@ -326,7 +327,7 @@ public class WASBuildStep extends Builder {
 
         if(getProfileScriptFiles() != null && getProfileScriptFiles().length() > 0) {
             for(String profileScriptFile: Util.tokenize(Util.replaceMacro(env.expand(getProfileScriptFiles()), varResolver))) {
-                FilePath profileScriptFilePath = project.getWorkspace().child(profileScriptFile);
+                FilePath profileScriptFilePath = build.getWorkspace().child(profileScriptFile);
                 if(profileScriptFilePath.exists()) {
                     args.add("-profile");
                     args.add(profileScriptFilePath);
@@ -360,7 +361,7 @@ public class WASBuildStep extends Builder {
         // --- trace file ---
 
         if(getTraceFile() != null && getTraceFile().length() > 0) {
-            FilePath traceFilePath = project.getWorkspace().child(Util.replaceMacro(env.expand(getTraceFile()), varResolver));
+            FilePath traceFilePath = build.getWorkspace().child(Util.replaceMacro(env.expand(getTraceFile()), varResolver));
             args.add("-tracefile");
             args.add(traceFilePath);
         }

@@ -86,7 +86,7 @@ public class WASServer {
     }
 
     public String getPassword() {
-        return password.toString();
+        return Secret.toString(password);
     }
 
     public int getPort() {
