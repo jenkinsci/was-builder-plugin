@@ -4,14 +4,14 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.398</version>
+    <version>1.409</version>
   </parent>
 
   <artifactId>was-builder</artifactId>
   <packaging>hpi</packaging>
   <name>WAS Builder Plugin</name>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/WAS+Builder+Plugin</url>
-  <version>1.7-SNAPSHOT</version>
+  <version>1.6.1-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,7 +21,7 @@
     <developer>
       <id>rseguy</id>
       <name>Romain Seguy</name>
-      <email>rseguy@ifrance.com</email>
+      <email>romain.seguy@gmail.com</email>
       <timezone>+1</timezone>
     </developer>
   </developers>

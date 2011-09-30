@@ -1,7 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009-2010, Manufacture Française des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2009-2011, Manufacture Française des Pneumatiques Michelin,
+ * Romain Seguy, Alan Harder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -236,7 +237,9 @@ public class WASBuildStep extends Builder {
 
                 String wsadminExecutable = wasInstallation.getWsadminExecutable(launcher);
                 if(wsadminExecutable != null) {
-                    args.add(wsadminExecutable);
+                    for(String wsadminExecutablePart: wsadminExecutable.split(" ")) {
+                        args.add(wsadminExecutablePart);
+                    }
                 }
                 else {
                     listener.fatalError(ResourceBundleHolder.get(WASBuildStep.class).format("NoWsadminExecutable", wasInstallation.getName(), wasServer.getName()));
