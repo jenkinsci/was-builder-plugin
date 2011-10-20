@@ -11,7 +11,7 @@
   <packaging>hpi</packaging>
   <name>WAS Builder Plugin</name>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/WAS+Builder+Plugin</url>
-  <version>1.6.1-SNAPSHOT</version>
+  <version>1.6.1</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,4 +39,10 @@
         <version>0.4</version>
     </dependency>
   </dependencies-->
+
+  <scm>
+    <connection>scm:svn:https://svn.jenkins-ci.org/tags/was-builder-1.6.1</connection>
+    <developerConnection>scm:svn:https://svn.jenkins-ci.org/tags/was-builder-1.6.1</developerConnection>
+    <url>https://svn.jenkins-ci.org/tags/was-builder-1.6.1</url>
+  </scm>
 </project>
