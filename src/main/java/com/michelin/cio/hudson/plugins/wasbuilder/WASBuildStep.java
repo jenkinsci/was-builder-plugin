@@ -162,9 +162,8 @@ public class WASBuildStep extends Builder {
         return language;
     }
 
-    @SuppressWarnings("deprecation")
     public String getPassword() {
-        return password != null ? password.toString() : null;
+        return password != null ? password.getPlainText() : null;
     }
 
     public String getProfileScriptFiles() {
